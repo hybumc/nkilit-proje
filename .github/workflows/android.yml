@@ -1,25 +1,16 @@
-name: Android APK Build
+name: Build Android APK
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev xz-utils liblzma-dev libffi-dev uuid-dev openjdk-17-jdk
-
-      - name: Build with Buildozer
-        uses: GearSietch/buildozer-action@v1
+      - name: Build APK
+        uses: ArtemSerebrennkov/buildozer-action@v1.6.1
         with:
           command: android debug
           buildozer_version: master
@@ -27,5 +18,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: nkilit-debug-apk
+          name: nkilit-apk
           path: bin/*.apk
