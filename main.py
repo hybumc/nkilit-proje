@@ -131,7 +131,6 @@ class NKilitApp(App):
         Window.bind(on_request_close=self.prevent_exit)
         Window.bind(on_keyboard=self.on_key_down)
         
-        # 10 KAT GÜVENLİK: Her 0.5 saniyede bir ekranı zorla geri getirir
         Clock.schedule_interval(self.enforce_kiosk_mode, 0.5)
         
         Builder.load_string(kv)
@@ -145,11 +144,10 @@ class NKilitApp(App):
 
     def on_key_down(self, window, key, *args):
         if key in [27, 82, 1073742094] and self.locked:
-            return True # Geri tuşu, Menü tuşu ve Uygulama Değiştiriciyi engelle
+            return True
         return False
 
     def enforce_kiosk_mode(self, dt):
-        """Ultra-Agresif Koruma Döngüsü"""
         if self.locked and platform == 'android':
             try:
                 from jnius import autoclass
@@ -157,7 +155,6 @@ class NKilitApp(App):
                 activity = PythonActivity.mActivity
                 Intent = autoclass('android.content.Intent')
                 
-                # Uygulamayı tüm katmanların üzerine zorla çıkar
                 intent = Intent(activity, PythonActivity)
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 activity.startActivity(intent)
@@ -165,7 +162,6 @@ class NKilitApp(App):
                 pass
 
     def validate_and_save(self):
-        # Önceki hatayı çözen ID kontrolü
         ids = self.root.ids
         c_ad = ids.cihaz_adi.text.strip()
         a_s = ids.admin_sifre.text.strip()
@@ -187,7 +183,6 @@ class NKilitApp(App):
         
         layout = FloatLayout()
         
-        # Kilit Başlığı
         layout.add_widget(Label(
             text=f"SİSTEM KORUMASI: {config['cihaz_adi'].upper()}",
             pos_hint={'center_x': 0.5, 'top': 0.95},
@@ -277,9 +272,12 @@ class NKilitApp(App):
 
     def hide_app(self):
         if platform == 'android':
-            from jnius import autoclass
-            activity = autoclass('org.kivy.android.PythonActivity').mActivity
-            activity.moveTaskToBack(True)
+            try:
+                from jnius import autoclass
+                activity = autoclass('org.kivy.android.PythonActivity').mActivity
+                activity.moveTaskToBack(True)
+            except:
+                pass
 
     def change_lock_pass_dialog(self, instance):
         content = BoxLayout(orientation='vertical', spacing=10, padding=10)
@@ -297,39 +295,4 @@ class NKilitApp(App):
         p.open()
 
 if __name__ == '__main__':
-    NKilitApp().run()E", size_hint=(0.4, 0.12), pos_hint={'center_x': 0.5, 'center_y': 0.28}, background_color=[0.9,0.1,0.1,1], bold=True)
-        b2.bind(on_press=lambda x: setattr(self.manager, 'current', 'lock'))
-        
-        l.add_widget(b1); l.add_widget(b2)
-        self.add_widget(l)
-
-    def hide_app(self, instance):
-        try:
-            from jnius import autoclass
-            autoclass('org.kivy.android.PythonActivity').mActivity.moveTaskToBack(True)
-        except:
-            App.get_running_app().stop()
-
-class BRTKilitApp(App):
-    def build(self):
-        # GERİ TUŞUNU VE KAPATMAYI ENGELLE
-        Window.bind(on_request_close=self.block_exit)
-        self.sm = ScreenManager(transition=FadeTransition())
-        self.refresh()
-        return self.sm
-
-    def block_exit(self, *args):
-        # Geri tuşuna basıldığında hiçbir şey yapma
-        return True
-
-    def refresh(self):
-        self.sm.clear_widgets()
-        store = JsonStore('config.json')
-        self.sm.add_widget(SetupScreen(name='setup'))
-        self.sm.add_widget(LockScreen(name='lock'))
-        self.sm.add_widget(AdminPanel(name='admin'))
-        self.sm.add_widget(UserArea(name='user_area'))
-        self.sm.current = 'lock' if store.exists('settings') else 'setup'
-
-if __name__ == '__main__':
-    BRTKilitApp().run()
+    NKilitApp().run()
