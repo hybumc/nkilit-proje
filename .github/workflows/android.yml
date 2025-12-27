@@ -1,25 +1,26 @@
-name: Build
-on: [push, pull_request]
+name: Build Android APK
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  # Build job. Builds app for Android with Buildozer
-  build-android:
+  build:
     name: Build for Android
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
-          workdir: test_app
+          # Dosyaların ana dizinde olduğu için '.' koyduk
+          workdir: .
           buildozer_version: stable
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: nkilit-package
+          # Çıktı dosyasını otomatik yakalar
           path: ${{ steps.buildozer.outputs.filename }}
