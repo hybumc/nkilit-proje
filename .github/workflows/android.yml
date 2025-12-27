@@ -3,24 +3,26 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    name: Build for Android
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # Hata vermeyen sabit sürüm
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          # Dosyaların ana dizinde olduğu için '.' koyduk
-          workdir: .
-          buildozer_version: stable
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev xz-utils liblzma-dev libffi-dev uuid-dev openjdk-17-jdk python3-pip
+          pip3 install --user --upgrade Cython==0.29.33 buildozer
 
-      - name: Upload artifacts
+      - name: Build APK
+        run: |
+          # Buildozer'ı çalıştırılabilir yola ekle ve derlemeyi başlat
+          export PATH=$PATH:$HOME/.local/bin
+          yes y | buildozer -v android debug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: nkilit-package
-          # Çıktı dosyasını otomatik yakalar
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: Uygulama-APK
+          path: bin/*.apk
